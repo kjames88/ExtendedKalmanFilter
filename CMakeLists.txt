@@ -10,6 +10,4 @@ set(sources
     src/main.cpp
     src/tools.cpp)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 add_executable(ExtendedKF ${sources})

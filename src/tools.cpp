@@ -18,9 +18,6 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     VectorXd sum = VectorXd(4);
     sum << 0, 0, 0, 0;
     for (int i=0; i < estimations.size(); ++i) {
-      
-      std::cout << "    estimate " << std::endl << estimations[i] << std::endl << "    ground truth " << std::endl << ground_truth[i] << std::endl;
-      
       VectorXd d = estimations[i] - ground_truth[i];
       VectorXd d_square = d.array() * d.array();
       sum += d_square;
@@ -32,10 +29,26 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-  /**
-  TODO:
-    * Calculate a Jacobian here.
-  */
+  MatrixXd Hj = MatrixXd(3,4);
+  float px = x_state[0];
+  float py = x_state[1];
+  float vx = x_state[2];
+  float vy = x_state[3];
+  float d = (px * px) + (py * py);
+  float d_12 = sqrt(d);
+  float d_32 = d * d_12;
+  float n = (vx * py) - (vy * px);
+
+  if (fabs(d) > 0.0001) {
+    Hj << px / d_12, py / d_12, 0, 0,
+      -py / d, px / d, 0, 0,
+      (py * n) / d_32, (-px * n) / d_32, px / d_12, py / d_12;
+  } else {
+    Hj << 0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0;
+  }
+  return Hj;
 }
 
 VectorXd Tools::PolarToCartesian(VectorXd const& polar) {
@@ -59,9 +72,8 @@ VectorXd Tools::CartesianToPolar(VectorXd const& cartesian) {
   float rho = sqrt((px * px) + (py * py));
   
   double phi = atan2(py,px);
-  std::cout << "phi is " <<  phi << std::endl;
   
-  float rho_dot = ((px * vx) + (py * vy)) / rho;
+  float rho_dot = (rho > 0.0001) ? ((px * vx) + (py * vy)) / rho : 0.0;
   VectorXd polar = VectorXd(3);
   polar << rho, phi, rho_dot;
   return polar;

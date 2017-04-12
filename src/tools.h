@@ -23,7 +23,7 @@ public:
   /**
   * A helper method to calculate Jacobians.
   */
-  Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
+  static Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
 
   static Eigen::VectorXd PolarToCartesian(Eigen::VectorXd const& polar);
   static Eigen::VectorXd CartesianToPolar(Eigen::VectorXd const& cartesian);
