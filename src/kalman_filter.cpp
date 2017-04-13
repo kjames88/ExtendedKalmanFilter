@@ -16,6 +16,7 @@ void KalmanFilter::Init(int dim_state, int dim_pred_state) {
   H_ = MatrixXd(dim_pred_state, dim_state);
   R_ = MatrixXd(dim_pred_state, dim_pred_state);
   Q_ = MatrixXd(dim_state, dim_state);
+  I_ = MatrixXd::Identity(dim_state, dim_state);
 }
 
 void KalmanFilter::Predict() {
@@ -28,12 +29,11 @@ void KalmanFilter::Predict() {
 void KalmanFilter::Update(const VectorXd &z) {
   // Laser
   VectorXd y = z - H_ * x_;
-  MatrixXd S = H_ * P_ * H_.transpose() + R_;
-  MatrixXd K = P_ * H_.transpose() * S.inverse();
+  MatrixXd PHt = P_ * H_.transpose();
+  MatrixXd S = H_ * PHt + R_;
+  MatrixXd K = PHt * S.inverse();
   x_ = x_ + K * y;
-  long dim = x_.size();
-  MatrixXd I = MatrixXd::Identity(dim, dim);
-  P_ = (I - K * H_) * P_;
+  P_ = (I_ - K * H_) * P_;
 }
 
 void KalmanFilter::UpdateEKF(VectorXd const& z) {
@@ -41,10 +41,9 @@ void KalmanFilter::UpdateEKF(VectorXd const& z) {
   //   Convert cartesian coordinates to polar using h(x')
   VectorXd h_x = Tools::CartesianToPolar(x_);
   VectorXd y = z - h_x;
-  MatrixXd S = H_ * P_ * H_.transpose() + R_;
-  MatrixXd K = P_ * H_.transpose() * S.inverse();
+  MatrixXd PHt = P_ * H_.transpose();
+  MatrixXd S = H_ * PHt + R_;
+  MatrixXd K = PHt * S.inverse();
   x_ = x_ + K * y;
-  long dim = x_.size();
-  MatrixXd I = MatrixXd::Identity(dim, dim);
-  P_ = (I - K * H_) * P_;  
+  P_ = (I_ - K * H_) * P_;  
 }
